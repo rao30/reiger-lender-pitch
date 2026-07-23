@@ -251,7 +251,9 @@
                 <th class="text-right">SF Share</th>
                 <th class="text-right">GPR</th>
                 <th class="text-right">EGI</th>
-                <th class="text-right">Utils+</th>
+                <th class="text-right">Electric</th>
+                <th class="text-right">Water</th>
+                <th class="text-right">Other Util</th>
                 <th class="text-right">Tax</th>
                 <th class="text-right">Ins</th>
                 <th class="text-right">NOI</th>
@@ -321,6 +323,7 @@
         <div class="input-group"><label>Min DSCR</label><input type="number" id="inp-dscr" value="1.25" step="0.05"></div>
         <div class="input-group"><label>Cap rate (%)</label><input type="number" id="inp-cap" value="9" step="0.25"></div>
         <div class="input-group"><label>Insurance annual ($)</label><input type="number" id="inp-ins" value="40000" step="1000"></div>
+        <div class="input-group"><label>Electric annual - portfolio ($)</label><input type="number" id="inp-electric" value="27711" step="500"></div>
         <div class="input-group"><label>Water / mo portfolio ($)</label><input type="number" id="inp-water" value="800" step="50"></div>
         <div class="input-group"><label>Other utils / mo ($)</label><input type="number" id="inp-other" value="200" step="25"></div>
       </div>
@@ -375,6 +378,7 @@ function inputs() {
     minDscr: +document.getElementById('inp-dscr').value,
     capRate: +document.getElementById('inp-cap').value / 100,
     insuranceAnnual: +document.getElementById('inp-ins').value,
+    electricAnnual: +document.getElementById('inp-electric').value,
     waterMonthly: +document.getElementById('inp-water').value,
     otherUtilsMonthly: +document.getElementById('inp-other').value,
   };
@@ -468,13 +472,14 @@ function render() {
 
   const stb = document.querySelector('#stab-table tbody');
   stb.innerHTML = s.byProp.map(p => {
-    const utils = p.electric + p.water + p.other;
     return `<tr>
       <td>${p.id}</td>
       <td class="text-right">${fmtPct(p.sfShare)}</td>
       <td class="text-right">${fmt(p.gpr)}</td>
       <td class="text-right">${fmt(p.egi)}</td>
-      <td class="text-right">${fmt(utils)}</td>
+      <td class="text-right">${fmt(p.electric)}</td>
+      <td class="text-right">${fmt(p.water)}</td>
+      <td class="text-right">${fmt(p.other)}</td>
       <td class="text-right">${fmt(p.taxes)}</td>
       <td class="text-right">${fmt(p.insurance)}</td>
       <td class="text-right">${fmt(p.noi)}</td>
@@ -485,7 +490,9 @@ function render() {
     <td class="text-right">100%</td>
     <td class="text-right">${fmt(s.gpr)}</td>
     <td class="text-right">${fmt(s.egi)}</td>
-    <td class="text-right">${fmt(a.electricAnnual + a.waterMonthly*12 + a.otherUtilsMonthly*12)}</td>
+    <td class="text-right">${fmt(a.electricAnnual)}</td>
+    <td class="text-right">${fmt(a.waterMonthly*12)}</td>
+    <td class="text-right">${fmt(a.otherUtilsMonthly*12)}</td>
     <td class="text-right">${fmt(s.taxes)}</td>
     <td class="text-right">${fmt(a.insuranceAnnual)}</td>
     <td class="text-right">${fmt(s.noi)}</td>
