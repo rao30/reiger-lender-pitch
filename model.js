@@ -45,7 +45,7 @@ const DEFAULTS = {
   waterMonthly: 800,
   otherUtilsMonthly: 200,
   electricMonthly: 2309, // ~$27,711/yr Dallas seasonal model
-  capRate: 0.09,
+  capRate: 0.08,
   taxRate: 0.02195,
   // Equity / construction
   equityDownPct: 0.3, // 30% down at closing (on purchase)
