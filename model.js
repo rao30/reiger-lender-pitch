@@ -53,6 +53,7 @@ const DEFAULTS = {
   constrPoints: 0.03,
   renoMonthsEach: 5,
   leaseUpMonths: 1,
+  postStabilizeMonths: 6, // show plateau after full reno
   // Take-out
   takeoutLtv: 0.75,
   takeoutRate: 0.0675,
@@ -242,7 +243,9 @@ function buildPhasedSchedule(assumptions, props = PROPERTIES) {
   const initialGpr = phases.reduce((s, p) => s + p.currentGprMonthly, 0);
   const initialEgi = initialGpr * (1 - a.vacancyInitial);
 
-  for (let m = 0; m <= lastStabilize + 2; m++) {
+  const horizon = lastStabilize + Math.max(3, Math.round(a.postStabilizeMonths || 6));
+
+  for (let m = 0; m <= horizon; m++) {
     let draw = 0;
     const drawNotes = [];
 
@@ -320,7 +323,11 @@ function buildPhasedSchedule(assumptions, props = PROPERTIES) {
           : activeReno
             ? `Reno ${activeReno.id}`
             : byStatus.stabilized.length === phases.length
-              ? "Stabilized"
+              ? m === lastStabilize
+                ? "Fully stabilized"
+                : m > lastStabilize
+                  ? "Stabilized hold"
+                  : "Stabilized"
               : "Lease-up",
     });
   }
@@ -336,6 +343,8 @@ function buildPhasedSchedule(assumptions, props = PROPERTIES) {
     months,
     renoMonthsEach: renoMos,
     lastStabilize,
+    horizon,
+    postStabilizeMonths: Math.max(3, Math.round(a.postStabilizeMonths || 6)),
     totalRehab,
     projectCost,
     commitment,

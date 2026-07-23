@@ -365,8 +365,11 @@
           <div class="metric-card" style="background:var(--cream2)"><div class="metric-label" style="color:var(--ink2)">= CF After Debt (annual)</div><div class="metric-value success" id="t-cfad">-</div></div>
           <div class="metric-card"><div class="metric-label">CF After Debt / mo</div><div class="metric-value success" id="t-cfad-mo">-</div></div>
         </div>
-        <p class="note" style="margin-top:16px;margin-bottom:0">Chart below is <strong>monthly EGI during the reno ramp</strong> (carry -> stabilize) - not CF after debt.</p>
-        <div class="chart-box" style="height:260px;margin-top:12px"><canvas id="chart-egi"></canvas></div>
+        <p class="note" style="margin-top:16px;margin-bottom:0">
+          Chart runs through the reno ramp, then <strong>6+ months of stabilized hold</strong> so you see the flat plateau.
+          Amber line = EGI minus bridge interest; dashed green = permanent CF after debt / mo after take-out.
+        </p>
+        <div class="chart-box" style="height:300px;margin-top:12px"><canvas id="chart-egi"></canvas></div>
       </section>
 
       <section class="card">
@@ -391,6 +394,7 @@
         <div class="input-group"><label>Down payment at close (%)</label><input type="number" id="inp-down" value="30" step="1" min="0" max="100"></div>
         <div class="input-group"><label>Reno months / building (4-6)</label><input type="number" id="inp-reno-mos" value="5" min="4" max="6" step="1"></div>
         <div class="input-group"><label>Lease-up after reno (months)</label><input type="number" id="inp-lease" value="1" min="0" max="3" step="1"></div>
+        <div class="input-group"><label>Months shown after full stabilization</label><input type="number" id="inp-post-stab" value="6" min="3" max="18" step="1"></div>
         <div class="input-group"><label>Rehab cost ($/SF)</label><input type="number" id="inp-psf" value="70" step="5"></div>
         <div class="input-group"><label>Purchase price ($)</label><input type="number" id="inp-purchase" value="1022000" step="1000"></div>
         <div class="input-group"><label>Closing / holding ($)</label><input type="number" id="inp-closing" value="227400" step="1000"></div>
@@ -450,6 +454,7 @@ function inputs() {
     equityDownPct: +document.getElementById('inp-down').value / 100,
     renoMonthsEach: +document.getElementById('inp-reno-mos').value,
     leaseUpMonths: +document.getElementById('inp-lease').value,
+    postStabilizeMonths: +document.getElementById('inp-post-stab').value,
     renoPsf: +document.getElementById('inp-psf').value,
     purchasePrice: +document.getElementById('inp-purchase').value,
     closingHolding: +document.getElementById('inp-closing').value,
@@ -648,15 +653,48 @@ function render() {
   });
 
   if (chartEgi) chartEgi.destroy();
+  const cfadMo = t.cfad / 12;
+  const stabStart = sch.lastStabilize;
   chartEgi = new Chart(document.getElementById('chart-egi'), {
     type: 'bar',
     data: {
       labels,
-      datasets: [{
-        label: 'Monthly EGI during ramp (not CF after debt)',
-        data: sch.months.map(r => r.egiMo),
-        backgroundColor: sch.months.map(r => r.onlineIds.length === sch.phases.length ? CC.green : (r.vacatedBuilding ? CC.gold2 : CC.blue)),
-      }]
+      datasets: [
+        {
+          type: 'bar',
+          label: 'Monthly EGI (ramp -> plateau)',
+          data: sch.months.map(r => r.egiMo),
+          backgroundColor: sch.months.map(r => {
+            if (r.month > stabStart) return 'rgba(58,125,92,0.55)';
+            if (r.onlineIds.length === sch.phases.length) return CC.green;
+            if (r.vacatedBuilding) return CC.gold2;
+            return CC.blue;
+          }),
+          order: 2,
+        },
+        {
+          type: 'line',
+          label: 'EGI - bridge interest / mo',
+          data: sch.months.map(r => r.cashAfterInterest),
+          borderColor: CC.amber,
+          backgroundColor: 'transparent',
+          tension: 0.25,
+          pointRadius: 2,
+          borderWidth: 2,
+          order: 1,
+        },
+        {
+          type: 'line',
+          label: 'Perm CF after debt / mo',
+          data: sch.months.map(r => (r.month >= stabStart ? cfadMo : null)),
+          borderColor: CC.green,
+          borderDash: [6, 4],
+          pointRadius: 0,
+          borderWidth: 2,
+          spanGaps: false,
+          order: 0,
+        },
+      ]
     },
     options: {
       responsive: true, maintainAspectRatio: false,
@@ -664,12 +702,19 @@ function render() {
         legend: { display: true, labels: { color: CC.ink3, boxWidth: 12, font: { size: 11 } } },
         tooltip: {
           callbacks: {
-            afterBody: () => 'Stabilized CF after debt is annual NOI − DS (see waterfall above).',
+            afterBody: (items) => {
+              const idx = items[0]?.dataIndex;
+              if (idx == null) return '';
+              const row = sch.months[idx];
+              if (row.month === stabStart) return 'All buildings online - full stabilization.';
+              if (row.month > stabStart) return 'Stabilized hold - EGI plateau after full reno.';
+              return '';
+            },
           },
         },
       },
       scales: {
-        x: { ticks: { color: CC.ink3, maxTicksLimit: 12, font: { size: 10 } }, grid: { display: false } },
+        x: { ticks: { color: CC.ink3, maxTicksLimit: 18, font: { size: 10 } }, grid: { display: false } },
         y: { ticks: { color: CC.ink3, callback: v => '$' + (v/1000).toFixed(0) + 'k' }, grid: { color: CC.cream3 } }
       }
     }
