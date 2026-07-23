@@ -3,22 +3,24 @@
 /**
  * Reiger Avenue - phased gut renovation + draw-based construction interest.
  * Reno order: 5210 -> 5206 -> 5204 -> 5200
+ *
+ * Carry: only the building under gut is vacated. Others keep in-place rents
+ * at initial vacancy (~20%), then step to stabilized rent/vacancy after reno.
  */
 
 const TOTAL_BUILDING_SF = 16060;
 
-/** Building SF allocated by unit share of 50 rentable rooms (PDF total 16,060 SF). */
+/** In-place monthly GPR (100% occupied) from corrected rent rolls. */
 const PROPERTIES = [
-  { id: "5210", address: "5210 Reiger Ave", units: 9, order: 0 },
-  { id: "5206", address: "5206 Reiger Ave", units: 9, order: 1 },
-  { id: "5204", address: "5204 Reiger Ave", units: 21, order: 2 },
-  { id: "5200", address: "5200 Reiger Ave", units: 11, order: 3 },
+  { id: "5210", address: "5210 Reiger Ave", units: 9, order: 0, currentGprMonthly: 5327 },
+  { id: "5206", address: "5206 Reiger Ave", units: 9, order: 1, currentGprMonthly: 5210 },
+  { id: "5204", address: "5204 Reiger Ave", units: 21, order: 2, currentGprMonthly: 13353 },
+  { id: "5200", address: "5200 Reiger Ave", units: 11, order: 3, currentGprMonthly: 5579 },
 ].map((p) => {
   const buildingSf = Math.round((TOTAL_BUILDING_SF * p.units) / 50);
   return { ...p, buildingSf, sfShare: buildingSf / TOTAL_BUILDING_SF };
 });
 
-// Fix rounding so SF sums exactly to 16,060
 (function fixSf() {
   const sum = PROPERTIES.reduce((a, p) => a + p.buildingSf, 0);
   const delta = TOTAL_BUILDING_SF - sum;
@@ -33,7 +35,9 @@ const DEFAULTS = {
   closingHolding: 227400,
   renoPsf: 70,
   rentMonthly: 725,
-  vacancyRate: 0.08,
+  // Vacancy path: current portfolio ~20% -> 10% once renovated/stabilized
+  vacancyInitial: 0.2,
+  vacancyStabilized: 0.1,
   mgmtPct: 0.1,
   repairsPct: 0.05,
   reservePerUnitMo: 25,
@@ -43,12 +47,13 @@ const DEFAULTS = {
   electricAnnual: 27711,
   capRate: 0.09,
   taxRate: 0.02195,
-  // Construction / bridge (draw-based - not Dutch)
+  // Equity / construction
+  equityDownPct: 0.3, // 30% down at closing (on purchase)
   constrRate: 0.11,
   constrPoints: 0.03,
-  renoMonthsEach: 5, // 4-6
+  renoMonthsEach: 5,
   leaseUpMonths: 1,
-  // Take-out permanent
+  // Take-out
   takeoutLtv: 0.75,
   takeoutRate: 0.0675,
   takeoutAmortYrs: 30,
@@ -85,20 +90,17 @@ function pvAnnuity(rate, nper, pmtAmt) {
   return (pmtAmt * (1 - Math.pow(1 + rate, -nper))) / rate;
 }
 
-/**
- * Solve stabilized NOI with tax circularity:
- * taxes = (NOI / cap) * taxRate  ->  NOI = NOI_pre / (1 + taxRate/cap)
- */
 function solveStabilized(assumptions, props = PROPERTIES) {
   const a = assumptions;
+  const vac = a.vacancyStabilized;
   const totalUnits = props.reduce((s, p) => s + p.units, 0);
   const gpr = totalUnits * a.rentMonthly * 12;
-  const vacancy = gpr * a.vacancyRate;
+  const vacancy = gpr * vac;
   const egi = gpr - vacancy;
 
   const byProp = props.map((p) => {
     const gprP = p.units * a.rentMonthly * 12;
-    const vacP = gprP * a.vacancyRate;
+    const vacP = gprP * vac;
     const egiP = gprP - vacP;
     const electric = a.electricAnnual * p.sfShare;
     const water = a.waterMonthly * 12 * p.sfShare;
@@ -154,8 +156,42 @@ function solveStabilized(assumptions, props = PROPERTIES) {
 }
 
 /**
- * Month-by-month construction schedule with draws and interest on drawn balance only.
+ * Building status in a given month:
+ * - under_reno: vacated for gut ($0)
+ * - stabilized: post-reno at $725 & stabilized vacancy
+ * - inplace: waiting its turn - current rents @ initial vacancy
  */
+function buildingMonthIncome(ph, month, a) {
+  if (month >= ph.renoStart && month <= ph.renoEnd) {
+    return {
+      status: "under_reno",
+      gprMo: 0,
+      egiMo: 0,
+      vacRate: 1,
+      unitsActive: 0,
+    };
+  }
+  if (month >= ph.stabilizeMonth) {
+    const gprMo = ph.units * a.rentMonthly;
+    return {
+      status: "stabilized",
+      gprMo,
+      egiMo: gprMo * (1 - a.vacancyStabilized),
+      vacRate: a.vacancyStabilized,
+      unitsActive: ph.units,
+    };
+  }
+  // In-place carry (before this building's reno starts)
+  const gprMo = ph.currentGprMonthly;
+  return {
+    status: "inplace",
+    gprMo,
+    egiMo: gprMo * (1 - a.vacancyInitial),
+    vacRate: a.vacancyInitial,
+    unitsActive: ph.units,
+  };
+}
+
 function buildPhasedSchedule(assumptions, props = PROPERTIES) {
   const a = assumptions;
   const ordered = [...props].sort((x, y) => x.order - y.order);
@@ -163,7 +199,7 @@ function buildPhasedSchedule(assumptions, props = PROPERTIES) {
   const leaseUp = Math.max(0, Math.round(a.leaseUpMonths));
 
   const phases = [];
-  let cursor = 1; // month 1 starts first reno; month 0 = close
+  let cursor = 1;
 
   for (const p of ordered) {
     const rehabBudget = p.buildingSf * a.renoPsf;
@@ -179,25 +215,32 @@ function buildPhasedSchedule(assumptions, props = PROPERTIES) {
       stabilizeMonth,
       monthlyDraw,
       renoMonths: renoMos,
+      stabGprMonthly: p.units * a.rentMonthly,
     });
-    cursor = end + 1; // next building starts immediately after prior finishes
+    cursor = end + 1;
   }
 
   const lastStabilize = Math.max(...phases.map((p) => p.stabilizeMonth));
   const totalRehab = phases.reduce((s, p) => s + p.rehabBudget, 0);
   const projectCost = a.purchasePrice + totalRehab + a.closingHolding;
 
-  // Commitment sized to project cost (lender max); actual interest only on draws
-  const commitment = projectCost;
-  const pointsFee = commitment * a.constrPoints;
-
-  // Month 0 close draws: purchase + closing/holding + points (points often financed)
-  const closeDraw = a.purchasePrice + a.closingHolding + pointsFee;
+  const pointsFee = projectCost * a.constrPoints;
+  const sponsorCashAtClose = a.purchasePrice * a.equityDownPct;
+  // Loan at close: 70% of purchase + closing/holding + points (rehab drawn later)
+  const closeDraw =
+    a.purchasePrice * (1 - a.equityDownPct) + a.closingHolding + pointsFee;
+  const commitment = closeDraw + totalRehab; // peak facility if all rehab financed
 
   const months = [];
   let drawn = 0;
   let cumulativeInterest = 0;
   let dutchInterest = 0;
+  let cumulativeEgi = 0;
+  let cumulativeInterestPaid = 0;
+
+  // Month-0 in-place portfolio EGI (all buildings operating, none vacated yet)
+  const initialGpr = phases.reduce((s, p) => s + p.currentGprMonthly, 0);
+  const initialEgi = initialGpr * (1 - a.vacancyInitial);
 
   for (let m = 0; m <= lastStabilize + 2; m++) {
     let draw = 0;
@@ -205,7 +248,9 @@ function buildPhasedSchedule(assumptions, props = PROPERTIES) {
 
     if (m === 0) {
       draw = closeDraw;
-      drawNotes.push("Close: purchase + closing/holding + points");
+      drawNotes.push(
+        `Close: ${(a.equityDownPct * 100).toFixed(0)}% down + loan for remainder + closing + points`
+      );
     }
 
     for (const ph of phases) {
@@ -218,12 +263,34 @@ function buildPhasedSchedule(assumptions, props = PROPERTIES) {
     drawn += draw;
     const interest = drawn * (a.constrRate / 12);
     cumulativeInterest += interest;
-    // Dutch: interest on full commitment every month from day 1
     dutchInterest += commitment * (a.constrRate / 12);
 
-    const online = phases.filter((p) => m >= p.stabilizeMonth);
-    const gprMo = online.reduce((s, p) => s + p.units * a.rentMonthly, 0);
-    const egiMo = gprMo * (1 - a.vacancyRate);
+    let gprMo = 0;
+    let egiMo = 0;
+    let unitsInplace = 0;
+    let unitsStab = 0;
+    let unitsReno = 0;
+    const byStatus = { inplace: [], under_reno: [], stabilized: [] };
+
+    for (const ph of phases) {
+      const inc = buildingMonthIncome(ph, m, a);
+      gprMo += inc.gprMo;
+      egiMo += inc.egiMo;
+      byStatus[inc.status].push(ph.id);
+      if (inc.status === "inplace") unitsInplace += ph.units;
+      if (inc.status === "stabilized") unitsStab += ph.units;
+      if (inc.status === "under_reno") unitsReno += ph.units;
+    }
+
+    const totalUnits = unitsInplace + unitsStab + unitsReno;
+    // Blended vacancy on units that could be occupied (excludes fully vacated reno bldg from denom of "economic" vac on GPR)
+    const blendedVac = gprMo > 0 ? 1 - egiMo / gprMo : unitsReno === totalUnits ? 1 : a.vacancyInitial;
+
+    cumulativeEgi += egiMo;
+    cumulativeInterestPaid += interest;
+    const cashAfterInterest = egiMo - interest;
+
+    const activeReno = phases.find((p) => m >= p.renoStart && m <= p.renoEnd);
 
     months.push({
       month: m,
@@ -236,23 +303,33 @@ function buildPhasedSchedule(assumptions, props = PROPERTIES) {
       interestSavedVsDutch: dutchInterest - cumulativeInterest,
       gprMo,
       egiMo,
-      onlineIds: online.map((p) => p.id),
+      blendedVac,
+      cashAfterInterest,
+      cumulativeEgi,
+      unitsInplace,
+      unitsStab,
+      unitsReno,
+      vacatedBuilding: activeReno ? activeReno.id : null,
+      onlineIds: byStatus.stabilized,
+      inplaceIds: byStatus.inplace,
+      renoIds: byStatus.under_reno,
       drawNotes,
       label:
         m === 0
           ? "Close"
-          : phases.find((p) => m >= p.renoStart && m <= p.renoEnd)
-            ? `Reno ${phases.find((p) => m >= p.renoStart && m <= p.renoEnd).id}`
-            : online.length === phases.length
+          : activeReno
+            ? `Reno ${activeReno.id}`
+            : byStatus.stabilized.length === phases.length
               ? "Stabilized"
               : "Lease-up",
     });
   }
 
-  const payoff = drawn; // principal; interest paid current (from reserve / ops)
   const totalInterestDraw = cumulativeInterest;
   const totalInterestDutch = dutchInterest;
   const interestSavings = totalInterestDutch - totalInterestDraw;
+  const peakDrawn = drawn;
+  const sponsorEquityTotal = sponsorCashAtClose; // purchase down; closing/points on loan
 
   return {
     phases,
@@ -264,11 +341,17 @@ function buildPhasedSchedule(assumptions, props = PROPERTIES) {
     commitment,
     pointsFee,
     closeDraw,
-    peakDrawn: drawn,
-    payoff,
+    sponsorCashAtClose,
+    sponsorEquityTotal,
+    equityDownPct: a.equityDownPct,
+    peakDrawn,
+    payoff: peakDrawn,
     totalInterestDraw,
     totalInterestDutch,
     interestSavings,
+    initialGpr,
+    initialEgi,
+    cumulativeEgiAtStab: months.find((r) => r.month === lastStabilize)?.cumulativeEgi || 0,
   };
 }
 
@@ -313,9 +396,12 @@ function sizeTakeout(noi, value, projectCost, payoff, assumptions) {
 
 function runModel(overrides = {}) {
   const assumptions = { ...DEFAULTS, ...overrides };
+  // Back-compat if UI still sends vacancyRate
+  if (overrides.vacancyRate != null && overrides.vacancyStabilized == null) {
+    assumptions.vacancyStabilized = overrides.vacancyRate;
+  }
   const stabilized = solveStabilized(assumptions);
   const schedule = buildPhasedSchedule(assumptions);
-  // Payoff at take-out = peak drawn principal (interest paid current during hold)
   const takeout = sizeTakeout(
     stabilized.noi,
     stabilized.value,

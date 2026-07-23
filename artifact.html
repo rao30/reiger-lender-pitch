@@ -140,9 +140,9 @@
   <header class="hero">
     <div class="eyebrow">Construction &amp; Permanent Loan Package</div>
     <h1>5200-5210 Reiger Ave - <em>Phased Gut Renovation</em></h1>
-    <p class="hero-sub">Four Munger Place buildings | 50 rooms | Full gut, one building at a time | Interest only on capital drawn | Stabilize at $725/room | Permanent take-out at portfolio NOI</p>
+    <p class="hero-sub">Four Munger Place buildings | 50 rooms | 30% down at close | Carry rents on non-reno buildings | Vacancy 20% -> 10% | Stabilize at $725/room</p>
     <div class="callout">
-      <strong style="color:var(--gold)">Lender structure:</strong> Acquisition + rehab financed on a <strong>draw facility</strong> (not Dutch interest). Renovation sequence <strong>5210 -> 5206 -> 5204 -> 5200</strong>, each a 4-6 month gut. Buildings come online at $725/room as they finish. Once fully stabilized, operating expenses are allocated by <strong>building square footage</strong>. Toggle rate, term, LTV, and reno months in the sidebar - the entire pitch recalculates live.
+      <strong style="color:var(--gold)">Lender structure:</strong> <strong>30% down</strong> at closing; construction facility draws the rest (not Dutch interest). Only the building under gut is vacated - the other three keep collecting in-place rent at <strong>~20% vacancy</strong>. As each building finishes, it steps to <strong>$725/room at 10% vacancy</strong>. Sequence: <strong>5210 -> 5206 -> 5204 -> 5200</strong>. OpEx at full stabilization allocated by building SF.
     </div>
   </header>
 
@@ -160,12 +160,16 @@
           <div class="metric-card"><div class="metric-label">Stabilized NOI</div><div class="metric-value success" id="m-noi">-</div></div>
           <div class="metric-card"><div class="metric-label">Value @ Cap</div><div class="metric-value accent" id="m-value">-</div></div>
           <div class="metric-card"><div class="metric-label">Yield on Cost</div><div class="metric-value accent" id="m-yoc">-</div></div>
+          <div class="metric-card"><div class="metric-label">Cash Down @ Close</div><div class="metric-value accent" id="m-down">-</div></div>
+          <div class="metric-card"><div class="metric-label">Initial Mo. EGI (carry)</div><div class="metric-value success" id="m-init-egi">-</div></div>
           <div class="metric-card"><div class="metric-label">Draw Interest (est.)</div><div class="metric-value" id="m-int-draw">-</div></div>
           <div class="metric-card"><div class="metric-label">Saved vs Dutch</div><div class="metric-value success" id="m-int-save">-</div></div>
         </div>
         <div class="pill-row">
           <span class="pill">50 rentable rooms</span>
           <span class="pill">16,060 building SF</span>
+          <span class="pill" id="pill-down">30% down</span>
+          <span class="pill" id="pill-vac">Vacancy 20% -> 10%</span>
           <span class="pill" id="pill-timeline">-</span>
           <span class="pill" id="pill-rent">$725 / room</span>
         </div>
@@ -176,7 +180,7 @@
           <h2>Phased Renovation Plan</h2>
           <span class="badge">5210 -> 5200</span>
         </div>
-        <p class="note">Each building is a full gut. Work is sequential so the portfolio ramps income as buildings stabilize - capital is drawn only for the active phase, not the entire rehab budget on day one.</p>
+        <p class="note">Each building is a full gut. Only the active reno building is vacated; the rest keep in-place rents (20% vacancy) until their turn, then step to $725 at 10% vacancy after lease-up.</p>
         <div class="timeline" id="phase-timeline"></div>
         <div style="overflow-x:auto;margin-top:18px">
           <table id="phase-table">
@@ -188,6 +192,7 @@
                 <th class="text-right">Rehab $</th>
                 <th class="text-right">Reno Window</th>
                 <th class="text-right">Online</th>
+                <th class="text-right">In-place GPR / mo</th>
                 <th class="text-right">Stab. GPR / mo</th>
               </tr>
             </thead>
@@ -198,15 +203,15 @@
 
       <section id="draws" class="card section-anchor">
         <div class="flex justify-between items-center mb-2">
-          <h2>Draw Schedule &amp; Interest (Not Dutch)</h2>
-          <span class="badge">Interest on Drawn Only</span>
+          <h2>Draw Schedule, Carry Income &amp; Interest</h2>
+          <span class="badge">Not Dutch</span>
         </div>
         <p class="note">
-          <strong style="color:var(--ink2)">Dutch interest</strong> charges the full commitment from day one.
-          This model charges interest only on the <strong>outstanding drawn balance</strong> - close advance first, then monthly rehab draws as each gut progresses.
+          Interest only on the <strong>drawn balance</strong>. Monthly EGI reflects in-place carry on buildings not under gut (20% vacancy), $0 on the vacated reno building, and $725 rents at 10% vacancy once each building stabilizes. Cash after interest = EGI − that month's interest.
         </p>
         <div class="metrics-grid" style="margin-bottom:16px">
-          <div class="metric-card"><div class="metric-label">Close Draw</div><div class="metric-value" id="m-close-draw">-</div></div>
+          <div class="metric-card"><div class="metric-label">Sponsor Cash @ Close</div><div class="metric-value accent" id="m-close-cash">-</div></div>
+          <div class="metric-card"><div class="metric-label">Close Loan Draw</div><div class="metric-value" id="m-close-draw">-</div></div>
           <div class="metric-card"><div class="metric-label">Peak Drawn</div><div class="metric-value" id="m-peak">-</div></div>
           <div class="metric-card"><div class="metric-label">Points</div><div class="metric-value" id="m-points">-</div></div>
           <div class="metric-card"><div class="metric-label">Bridge Rate</div><div class="metric-value warning" id="m-bridge-rate">-</div></div>
@@ -218,12 +223,13 @@
               <tr>
                 <th>Mo</th>
                 <th>Phase</th>
+                <th>Vacated</th>
                 <th class="text-right">Draw</th>
                 <th class="text-right">Drawn Bal</th>
                 <th class="text-right">Interest</th>
-                <th class="text-right">Cum. Int</th>
-                <th class="text-right">vs Dutch</th>
                 <th class="text-right">EGI / mo</th>
+                <th class="text-right">Blended Vac</th>
+                <th class="text-right">EGI − Int</th>
               </tr>
             </thead>
             <tbody></tbody>
@@ -236,7 +242,7 @@
           <h2>Stabilized Operations by Building</h2>
           <span class="badge">Allocated by SF</span>
         </div>
-        <p class="note">Gross rent = units x $725. Vacancy, management, and R&amp;M follow each building's EGI. Electric, water, other utilities, insurance, and real-estate taxes are split by <strong>building SF share</strong> of the 16,060 SF portfolio.</p>
+        <p class="note">Fully stabilized: gross rent = units x $725 at <strong>10% vacancy</strong>. Management and R&amp;M follow each building's EGI. Electric, water, other utilities, insurance, and taxes are split by <strong>building SF share</strong>.</p>
         <div style="overflow-x:auto">
           <table id="stab-table">
             <thead>
@@ -294,7 +300,9 @@
         <p class="note" style="margin-bottom:16px">Yellow-style inputs - change anything; charts and lender metrics update instantly.</p>
 
         <div class="input-group"><label>Stabilized rent / room ($)</label><input type="number" id="inp-rent" value="725" step="25"></div>
-        <div class="input-group"><label>Vacancy (%)</label><input type="number" id="inp-vac" value="8" step="0.5"></div>
+        <div class="input-group"><label>Initial vacancy - in-place carry (%)</label><input type="number" id="inp-vac-init" value="20" step="0.5"></div>
+        <div class="input-group"><label>Stabilized vacancy - post-reno (%)</label><input type="number" id="inp-vac-stab" value="10" step="0.5"></div>
+        <div class="input-group"><label>Down payment at close (%)</label><input type="number" id="inp-down" value="30" step="1" min="0" max="100"></div>
         <div class="input-group"><label>Reno months / building (4-6)</label><input type="number" id="inp-reno-mos" value="5" min="4" max="6" step="1"></div>
         <div class="input-group"><label>Lease-up after reno (months)</label><input type="number" id="inp-lease" value="1" min="0" max="3" step="1"></div>
         <div class="input-group"><label>Rehab cost ($/SF)</label><input type="number" id="inp-psf" value="70" step="5"></div>
@@ -337,22 +345,24 @@
 /**
  * Reiger Avenue - phased gut renovation + draw-based construction interest.
  * Reno order: 5210 -> 5206 -> 5204 -> 5200
+ *
+ * Carry: only the building under gut is vacated. Others keep in-place rents
+ * at initial vacancy (~20%), then step to stabilized rent/vacancy after reno.
  */
 
 const TOTAL_BUILDING_SF = 16060;
 
-/** Building SF allocated by unit share of 50 rentable rooms (PDF total 16,060 SF). */
+/** In-place monthly GPR (100% occupied) from corrected rent rolls. */
 const PROPERTIES = [
-  { id: "5210", address: "5210 Reiger Ave", units: 9, order: 0 },
-  { id: "5206", address: "5206 Reiger Ave", units: 9, order: 1 },
-  { id: "5204", address: "5204 Reiger Ave", units: 21, order: 2 },
-  { id: "5200", address: "5200 Reiger Ave", units: 11, order: 3 },
+  { id: "5210", address: "5210 Reiger Ave", units: 9, order: 0, currentGprMonthly: 5327 },
+  { id: "5206", address: "5206 Reiger Ave", units: 9, order: 1, currentGprMonthly: 5210 },
+  { id: "5204", address: "5204 Reiger Ave", units: 21, order: 2, currentGprMonthly: 13353 },
+  { id: "5200", address: "5200 Reiger Ave", units: 11, order: 3, currentGprMonthly: 5579 },
 ].map((p) => {
   const buildingSf = Math.round((TOTAL_BUILDING_SF * p.units) / 50);
   return { ...p, buildingSf, sfShare: buildingSf / TOTAL_BUILDING_SF };
 });
 
-// Fix rounding so SF sums exactly to 16,060
 (function fixSf() {
   const sum = PROPERTIES.reduce((a, p) => a + p.buildingSf, 0);
   const delta = TOTAL_BUILDING_SF - sum;
@@ -367,7 +377,9 @@ const DEFAULTS = {
   closingHolding: 227400,
   renoPsf: 70,
   rentMonthly: 725,
-  vacancyRate: 0.08,
+  // Vacancy path: current portfolio ~20% -> 10% once renovated/stabilized
+  vacancyInitial: 0.2,
+  vacancyStabilized: 0.1,
   mgmtPct: 0.1,
   repairsPct: 0.05,
   reservePerUnitMo: 25,
@@ -377,12 +389,13 @@ const DEFAULTS = {
   electricAnnual: 27711,
   capRate: 0.09,
   taxRate: 0.02195,
-  // Construction / bridge (draw-based - not Dutch)
+  // Equity / construction
+  equityDownPct: 0.3, // 30% down at closing (on purchase)
   constrRate: 0.11,
   constrPoints: 0.03,
-  renoMonthsEach: 5, // 4-6
+  renoMonthsEach: 5,
   leaseUpMonths: 1,
-  // Take-out permanent
+  // Take-out
   takeoutLtv: 0.75,
   takeoutRate: 0.0675,
   takeoutAmortYrs: 30,
@@ -419,20 +432,17 @@ function pvAnnuity(rate, nper, pmtAmt) {
   return (pmtAmt * (1 - Math.pow(1 + rate, -nper))) / rate;
 }
 
-/**
- * Solve stabilized NOI with tax circularity:
- * taxes = (NOI / cap) * taxRate  ->  NOI = NOI_pre / (1 + taxRate/cap)
- */
 function solveStabilized(assumptions, props = PROPERTIES) {
   const a = assumptions;
+  const vac = a.vacancyStabilized;
   const totalUnits = props.reduce((s, p) => s + p.units, 0);
   const gpr = totalUnits * a.rentMonthly * 12;
-  const vacancy = gpr * a.vacancyRate;
+  const vacancy = gpr * vac;
   const egi = gpr - vacancy;
 
   const byProp = props.map((p) => {
     const gprP = p.units * a.rentMonthly * 12;
-    const vacP = gprP * a.vacancyRate;
+    const vacP = gprP * vac;
     const egiP = gprP - vacP;
     const electric = a.electricAnnual * p.sfShare;
     const water = a.waterMonthly * 12 * p.sfShare;
@@ -488,8 +498,42 @@ function solveStabilized(assumptions, props = PROPERTIES) {
 }
 
 /**
- * Month-by-month construction schedule with draws and interest on drawn balance only.
+ * Building status in a given month:
+ * - under_reno: vacated for gut ($0)
+ * - stabilized: post-reno at $725 & stabilized vacancy
+ * - inplace: waiting its turn - current rents @ initial vacancy
  */
+function buildingMonthIncome(ph, month, a) {
+  if (month >= ph.renoStart && month <= ph.renoEnd) {
+    return {
+      status: "under_reno",
+      gprMo: 0,
+      egiMo: 0,
+      vacRate: 1,
+      unitsActive: 0,
+    };
+  }
+  if (month >= ph.stabilizeMonth) {
+    const gprMo = ph.units * a.rentMonthly;
+    return {
+      status: "stabilized",
+      gprMo,
+      egiMo: gprMo * (1 - a.vacancyStabilized),
+      vacRate: a.vacancyStabilized,
+      unitsActive: ph.units,
+    };
+  }
+  // In-place carry (before this building's reno starts)
+  const gprMo = ph.currentGprMonthly;
+  return {
+    status: "inplace",
+    gprMo,
+    egiMo: gprMo * (1 - a.vacancyInitial),
+    vacRate: a.vacancyInitial,
+    unitsActive: ph.units,
+  };
+}
+
 function buildPhasedSchedule(assumptions, props = PROPERTIES) {
   const a = assumptions;
   const ordered = [...props].sort((x, y) => x.order - y.order);
@@ -497,7 +541,7 @@ function buildPhasedSchedule(assumptions, props = PROPERTIES) {
   const leaseUp = Math.max(0, Math.round(a.leaseUpMonths));
 
   const phases = [];
-  let cursor = 1; // month 1 starts first reno; month 0 = close
+  let cursor = 1;
 
   for (const p of ordered) {
     const rehabBudget = p.buildingSf * a.renoPsf;
@@ -513,25 +557,32 @@ function buildPhasedSchedule(assumptions, props = PROPERTIES) {
       stabilizeMonth,
       monthlyDraw,
       renoMonths: renoMos,
+      stabGprMonthly: p.units * a.rentMonthly,
     });
-    cursor = end + 1; // next building starts immediately after prior finishes
+    cursor = end + 1;
   }
 
   const lastStabilize = Math.max(...phases.map((p) => p.stabilizeMonth));
   const totalRehab = phases.reduce((s, p) => s + p.rehabBudget, 0);
   const projectCost = a.purchasePrice + totalRehab + a.closingHolding;
 
-  // Commitment sized to project cost (lender max); actual interest only on draws
-  const commitment = projectCost;
-  const pointsFee = commitment * a.constrPoints;
-
-  // Month 0 close draws: purchase + closing/holding + points (points often financed)
-  const closeDraw = a.purchasePrice + a.closingHolding + pointsFee;
+  const pointsFee = projectCost * a.constrPoints;
+  const sponsorCashAtClose = a.purchasePrice * a.equityDownPct;
+  // Loan at close: 70% of purchase + closing/holding + points (rehab drawn later)
+  const closeDraw =
+    a.purchasePrice * (1 - a.equityDownPct) + a.closingHolding + pointsFee;
+  const commitment = closeDraw + totalRehab; // peak facility if all rehab financed
 
   const months = [];
   let drawn = 0;
   let cumulativeInterest = 0;
   let dutchInterest = 0;
+  let cumulativeEgi = 0;
+  let cumulativeInterestPaid = 0;
+
+  // Month-0 in-place portfolio EGI (all buildings operating, none vacated yet)
+  const initialGpr = phases.reduce((s, p) => s + p.currentGprMonthly, 0);
+  const initialEgi = initialGpr * (1 - a.vacancyInitial);
 
   for (let m = 0; m <= lastStabilize + 2; m++) {
     let draw = 0;
@@ -539,7 +590,9 @@ function buildPhasedSchedule(assumptions, props = PROPERTIES) {
 
     if (m === 0) {
       draw = closeDraw;
-      drawNotes.push("Close: purchase + closing/holding + points");
+      drawNotes.push(
+        `Close: ${(a.equityDownPct * 100).toFixed(0)}% down + loan for remainder + closing + points`
+      );
     }
 
     for (const ph of phases) {
@@ -552,12 +605,34 @@ function buildPhasedSchedule(assumptions, props = PROPERTIES) {
     drawn += draw;
     const interest = drawn * (a.constrRate / 12);
     cumulativeInterest += interest;
-    // Dutch: interest on full commitment every month from day 1
     dutchInterest += commitment * (a.constrRate / 12);
 
-    const online = phases.filter((p) => m >= p.stabilizeMonth);
-    const gprMo = online.reduce((s, p) => s + p.units * a.rentMonthly, 0);
-    const egiMo = gprMo * (1 - a.vacancyRate);
+    let gprMo = 0;
+    let egiMo = 0;
+    let unitsInplace = 0;
+    let unitsStab = 0;
+    let unitsReno = 0;
+    const byStatus = { inplace: [], under_reno: [], stabilized: [] };
+
+    for (const ph of phases) {
+      const inc = buildingMonthIncome(ph, m, a);
+      gprMo += inc.gprMo;
+      egiMo += inc.egiMo;
+      byStatus[inc.status].push(ph.id);
+      if (inc.status === "inplace") unitsInplace += ph.units;
+      if (inc.status === "stabilized") unitsStab += ph.units;
+      if (inc.status === "under_reno") unitsReno += ph.units;
+    }
+
+    const totalUnits = unitsInplace + unitsStab + unitsReno;
+    // Blended vacancy on units that could be occupied (excludes fully vacated reno bldg from denom of "economic" vac on GPR)
+    const blendedVac = gprMo > 0 ? 1 - egiMo / gprMo : unitsReno === totalUnits ? 1 : a.vacancyInitial;
+
+    cumulativeEgi += egiMo;
+    cumulativeInterestPaid += interest;
+    const cashAfterInterest = egiMo - interest;
+
+    const activeReno = phases.find((p) => m >= p.renoStart && m <= p.renoEnd);
 
     months.push({
       month: m,
@@ -570,23 +645,33 @@ function buildPhasedSchedule(assumptions, props = PROPERTIES) {
       interestSavedVsDutch: dutchInterest - cumulativeInterest,
       gprMo,
       egiMo,
-      onlineIds: online.map((p) => p.id),
+      blendedVac,
+      cashAfterInterest,
+      cumulativeEgi,
+      unitsInplace,
+      unitsStab,
+      unitsReno,
+      vacatedBuilding: activeReno ? activeReno.id : null,
+      onlineIds: byStatus.stabilized,
+      inplaceIds: byStatus.inplace,
+      renoIds: byStatus.under_reno,
       drawNotes,
       label:
         m === 0
           ? "Close"
-          : phases.find((p) => m >= p.renoStart && m <= p.renoEnd)
-            ? `Reno ${phases.find((p) => m >= p.renoStart && m <= p.renoEnd).id}`
-            : online.length === phases.length
+          : activeReno
+            ? `Reno ${activeReno.id}`
+            : byStatus.stabilized.length === phases.length
               ? "Stabilized"
               : "Lease-up",
     });
   }
 
-  const payoff = drawn; // principal; interest paid current (from reserve / ops)
   const totalInterestDraw = cumulativeInterest;
   const totalInterestDutch = dutchInterest;
   const interestSavings = totalInterestDutch - totalInterestDraw;
+  const peakDrawn = drawn;
+  const sponsorEquityTotal = sponsorCashAtClose; // purchase down; closing/points on loan
 
   return {
     phases,
@@ -598,11 +683,17 @@ function buildPhasedSchedule(assumptions, props = PROPERTIES) {
     commitment,
     pointsFee,
     closeDraw,
-    peakDrawn: drawn,
-    payoff,
+    sponsorCashAtClose,
+    sponsorEquityTotal,
+    equityDownPct: a.equityDownPct,
+    peakDrawn,
+    payoff: peakDrawn,
     totalInterestDraw,
     totalInterestDutch,
     interestSavings,
+    initialGpr,
+    initialEgi,
+    cumulativeEgiAtStab: months.find((r) => r.month === lastStabilize)?.cumulativeEgi || 0,
   };
 }
 
@@ -647,9 +738,12 @@ function sizeTakeout(noi, value, projectCost, payoff, assumptions) {
 
 function runModel(overrides = {}) {
   const assumptions = { ...DEFAULTS, ...overrides };
+  // Back-compat if UI still sends vacancyRate
+  if (overrides.vacancyRate != null && overrides.vacancyStabilized == null) {
+    assumptions.vacancyStabilized = overrides.vacancyRate;
+  }
   const stabilized = solveStabilized(assumptions);
   const schedule = buildPhasedSchedule(assumptions);
-  // Payoff at take-out = peak drawn principal (interest paid current during hold)
   const takeout = sizeTakeout(
     stabilized.noi,
     stabilized.value,
@@ -704,7 +798,9 @@ let chartDraws, chartNoi, chartEgi;
 function inputs() {
   return {
     rentMonthly: +document.getElementById('inp-rent').value,
-    vacancyRate: +document.getElementById('inp-vac').value / 100,
+    vacancyInitial: +document.getElementById('inp-vac-init').value / 100,
+    vacancyStabilized: +document.getElementById('inp-vac-stab').value / 100,
+    equityDownPct: +document.getElementById('inp-down').value / 100,
     renoMonthsEach: +document.getElementById('inp-reno-mos').value,
     leaseUpMonths: +document.getElementById('inp-lease').value,
     renoPsf: +document.getElementById('inp-psf').value,
@@ -736,11 +832,16 @@ function render() {
   setText('m-noi', fmt(s.noi));
   setText('m-value', fmt(s.value));
   setText('m-yoc', fmtPct(m.yieldOnCost));
+  setText('m-down', fmt(sch.sponsorCashAtClose));
+  setText('m-init-egi', fmt(sch.initialEgi));
   setText('m-int-draw', fmt(sch.totalInterestDraw));
   setText('m-int-save', fmt(sch.interestSavings));
   setText('pill-timeline', `${sch.lastStabilize} months to full stabilization`);
   setText('pill-rent', `${fmt(a.rentMonthly)} / room`);
+  setText('pill-down', `${fmtPct(a.equityDownPct, 0)} down @ close`);
+  setText('pill-vac', `Vacancy ${fmtPct(a.vacancyInitial, 0)} -> ${fmtPct(a.vacancyStabilized, 0)}`);
 
+  setText('m-close-cash', fmt(sch.sponsorCashAtClose));
   setText('m-close-draw', fmt(sch.closeDraw));
   setText('m-peak', fmt(sch.peakDrawn));
   setText('m-points', fmt(sch.pointsFee));
@@ -780,6 +881,7 @@ function render() {
     <td class="text-right">${fmt(p.rehabBudget)}</td>
     <td class="text-right">M${p.renoStart}-M${p.renoEnd}</td>
     <td class="text-right">M${p.stabilizeMonth}</td>
+    <td class="text-right">${fmt(p.currentGprMonthly)}</td>
     <td class="text-right">${fmt(p.units * a.rentMonthly)}</td>
   </tr>`).join('') + `<tr class="total">
     <td>Portfolio</td>
@@ -787,6 +889,7 @@ function render() {
     <td class="text-right">16,060</td>
     <td class="text-right">${fmt(sch.totalRehab)}</td>
     <td class="text-right" colspan="2">Fully online M${sch.lastStabilize}</td>
+    <td class="text-right">${fmt(sch.initialGpr)}</td>
     <td class="text-right">${fmt(s.totalUnits * a.rentMonthly)}</td>
   </tr>`;
 
@@ -794,12 +897,13 @@ function render() {
   dtb.innerHTML = sch.months.map(row => `<tr>
     <td>${row.month}</td>
     <td>${row.label}</td>
+    <td>${row.vacatedBuilding || '-'}</td>
     <td class="text-right">${fmt(row.draw)}</td>
     <td class="text-right">${fmt(row.drawn)}</td>
     <td class="text-right">${fmt(row.interest)}</td>
-    <td class="text-right">${fmt(row.cumulativeInterest)}</td>
-    <td class="text-right" style="color:var(--green)">${fmt(row.interestSavedVsDutch)}</td>
     <td class="text-right">${fmt(row.egiMo)}</td>
+    <td class="text-right">${fmtPct(row.blendedVac)}</td>
+    <td class="text-right" style="color:${row.cashAfterInterest >= 0 ? 'var(--green)' : 'var(--red)'}">${fmt(row.cashAfterInterest)}</td>
   </tr>`).join('');
 
   const stb = document.querySelector('#stab-table tbody');
@@ -833,17 +937,19 @@ function render() {
     <tr><td>Purchase</td><td class="text-right">${fmt(a.purchasePrice)}</td></tr>
     <tr><td>Hard renovation</td><td class="text-right">${fmt(sch.totalRehab)}</td></tr>
     <tr><td>Closing / holding</td><td class="text-right">${fmt(a.closingHolding)}</td></tr>
-    <tr><td>Points (financed)</td><td class="text-right">${fmt(sch.pointsFee)}</td></tr>
+    <tr><td>Points</td><td class="text-right">${fmt(sch.pointsFee)}</td></tr>
     <tr class="total"><td>Total uses</td><td class="text-right">${fmt(sch.projectCost + sch.pointsFee)}</td></tr>
     <tr><td colspan="2" style="height:8px;border:none"></td></tr>
-    <tr><td>Construction draws (peak)</td><td class="text-right">${fmt(sch.peakDrawn)}</td></tr>
-    <tr><td>Sponsor equity (plug)</td><td class="text-right">${fmt(Math.max(0, sch.projectCost + sch.pointsFee - sch.peakDrawn))}</td></tr>
-    <tr class="total"><td>Est. take-out loan</td><td class="text-right">${fmt(t.loan)}</td></tr>
-    <tr><td>Draw interest (carry)</td><td class="text-right">${fmt(sch.totalInterestDraw)}</td></tr>
+    <tr><td>Sponsor cash (${fmtPct(a.equityDownPct,0)} down)</td><td class="text-right">${fmt(sch.sponsorCashAtClose)}</td></tr>
+    <tr><td>Close loan draw</td><td class="text-right">${fmt(sch.closeDraw)}</td></tr>
+    <tr><td>Rehab draws (later)</td><td class="text-right">${fmt(sch.totalRehab)}</td></tr>
+    <tr class="total"><td>Peak construction balance</td><td class="text-right">${fmt(sch.peakDrawn)}</td></tr>
+    <tr><td>Est. take-out loan</td><td class="text-right">${fmt(t.loan)}</td></tr>
+    <tr><td>Initial mo. EGI (in-place carry)</td><td class="text-right">${fmt(sch.initialEgi)}</td></tr>
+    <tr><td>Draw interest (carry period)</td><td class="text-right">${fmt(sch.totalInterestDraw)}</td></tr>
     <tr><td>Interest saved vs Dutch</td><td class="text-right" style="color:var(--green)">${fmt(sch.interestSavings)}</td></tr>
   `;
 
-  // Charts
   const labels = sch.months.map(r => `M${r.month}`);
   if (chartDraws) chartDraws.destroy();
   chartDraws = new Chart(document.getElementById('chart-draws'), {
@@ -852,8 +958,8 @@ function render() {
       labels,
       datasets: [
         { label: 'Drawn balance', data: sch.months.map(r => r.drawn), borderColor: CC.gold, backgroundColor: 'rgba(160,120,64,0.12)', fill: true, tension: 0.25 },
-        { label: 'Cumulative draw interest', data: sch.months.map(r => r.cumulativeInterest), borderColor: CC.blue, tension: 0.25 },
-        { label: 'Cumulative Dutch interest', data: sch.months.map(r => r.dutchInterest), borderColor: CC.red, borderDash: [6,4], tension: 0.25 },
+        { label: 'Monthly EGI (carry)', data: sch.months.map(r => r.egiMo), borderColor: CC.green, tension: 0.25 },
+        { label: 'Monthly interest', data: sch.months.map(r => r.interest), borderColor: CC.red, borderDash: [6,4], tension: 0.25 },
       ]
     },
     options: {
@@ -892,9 +998,9 @@ function render() {
     data: {
       labels,
       datasets: [{
-        label: 'Portfolio EGI (monthly ramp)',
+        label: 'Portfolio EGI (carry + stabilize)',
         data: sch.months.map(r => r.egiMo),
-        backgroundColor: sch.months.map(r => r.onlineIds.length === sch.phases.length ? CC.green : CC.gold2),
+        backgroundColor: sch.months.map(r => r.onlineIds.length === sch.phases.length ? CC.green : (r.vacatedBuilding ? CC.gold2 : CC.blue)),
       }]
     },
     options: {
