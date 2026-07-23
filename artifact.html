@@ -343,18 +343,30 @@
           <h2>Permanent Take-Out</h2>
           <span class="badge">Post-Stabilization</span>
         </div>
-        <p class="note">Loan sized to the lesser of LTV and DSCR constraints against stabilized income value. Payoff is the peak drawn construction balance (interest assumed paid current during the hold).</p>
-        <div class="metrics-grid">
+        <p class="note">
+          Loan sized to the lesser of LTV and DSCR against stabilized income value.
+          <strong style="color:var(--ink2)">EGI is not cash flow after debt</strong> -
+          EGI is rent after vacancy; CF after debt = NOI − debt service (OpEx already taken out to get to NOI).
+        </p>
+        <div class="metrics-grid" style="margin-bottom:16px">
           <div class="metric-card"><div class="metric-label">Perm Loan</div><div class="metric-value accent" id="t-loan">-</div></div>
           <div class="metric-card"><div class="metric-label">Binding Constraint</div><div class="metric-value" id="t-bind">-</div></div>
           <div class="metric-card"><div class="metric-label">DSCR</div><div class="metric-value success" id="t-dscr">-</div></div>
           <div class="metric-card"><div class="metric-label">Debt Yield</div><div class="metric-value" id="t-dy">-</div></div>
           <div class="metric-card"><div class="metric-label">LTV / LTC</div><div class="metric-value" id="t-ltv">-</div></div>
-          <div class="metric-card"><div class="metric-label">Annual DS</div><div class="metric-value" id="t-ds">-</div></div>
-          <div class="metric-card"><div class="metric-label">CF After Debt</div><div class="metric-value success" id="t-cfad">-</div></div>
           <div class="metric-card"><div class="metric-label">Equity @ Refi</div><div class="metric-value" id="t-eq">-</div></div>
         </div>
-        <div class="chart-box" style="height:260px;margin-top:20px"><canvas id="chart-egi"></canvas></div>
+        <h2 style="font-size:20px;margin-bottom:8px">Stabilized Cash Waterfall (Annual)</h2>
+        <div class="metrics-grid">
+          <div class="metric-card"><div class="metric-label">EGI (annual)</div><div class="metric-value" id="t-egi">-</div></div>
+          <div class="metric-card"><div class="metric-label">− OpEx (annual)</div><div class="metric-value" id="t-opex">-</div></div>
+          <div class="metric-card"><div class="metric-label">= NOI (annual)</div><div class="metric-value success" id="t-noi">-</div></div>
+          <div class="metric-card"><div class="metric-label">− Debt Service (annual)</div><div class="metric-value" id="t-ds">-</div></div>
+          <div class="metric-card" style="background:var(--cream2)"><div class="metric-label" style="color:var(--ink2)">= CF After Debt (annual)</div><div class="metric-value success" id="t-cfad">-</div></div>
+          <div class="metric-card"><div class="metric-label">CF After Debt / mo</div><div class="metric-value success" id="t-cfad-mo">-</div></div>
+        </div>
+        <p class="note" style="margin-top:16px;margin-bottom:0">Chart below is <strong>monthly EGI during the reno ramp</strong> (carry -> stabilize) - not CF after debt.</p>
+        <div class="chart-box" style="height:260px;margin-top:12px"><canvas id="chart-egi"></canvas></div>
       </section>
 
       <section class="card">
@@ -931,8 +943,12 @@ function render() {
   setText('t-dscr', fmtX(t.dscr));
   setText('t-dy', fmtPct(t.debtYield));
   setText('t-ltv', `${fmtPct(t.ltv)} / ${fmtPct(t.ltc)}`);
+  setText('t-egi', fmt(s.egi));
+  setText('t-opex', fmt(s.opex));
+  setText('t-noi', fmt(s.noi));
   setText('t-ds', fmt(t.annualDs));
   setText('t-cfad', fmt(t.cfad));
+  setText('t-cfad-mo', fmt(t.cfad / 12));
   const eqEl = document.getElementById('t-eq');
   eqEl.textContent = fmt(t.equityReturned);
   eqEl.className = 'metric-value ' + (t.equityReturned >= 0 ? 'success' : 'danger');
@@ -1080,14 +1096,21 @@ function render() {
     data: {
       labels,
       datasets: [{
-        label: 'Portfolio EGI (carry + stabilize)',
+        label: 'Monthly EGI during ramp (not CF after debt)',
         data: sch.months.map(r => r.egiMo),
         backgroundColor: sch.months.map(r => r.onlineIds.length === sch.phases.length ? CC.green : (r.vacatedBuilding ? CC.gold2 : CC.blue)),
       }]
     },
     options: {
       responsive: true, maintainAspectRatio: false,
-      plugins: { legend: { display: false } },
+      plugins: {
+        legend: { display: true, labels: { color: CC.ink3, boxWidth: 12, font: { size: 11 } } },
+        tooltip: {
+          callbacks: {
+            afterBody: () => 'Stabilized CF after debt is annual NOI − DS (see waterfall above).',
+          },
+        },
+      },
       scales: {
         x: { ticks: { color: CC.ink3, maxTicksLimit: 12, font: { size: 10 } }, grid: { display: false } },
         y: { ticks: { color: CC.ink3, callback: v => '$' + (v/1000).toFixed(0) + 'k' }, grid: { color: CC.cream3 } }
