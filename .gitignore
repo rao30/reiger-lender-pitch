@@ -1,0 +1,7 @@
+﻿node_modules/
+.DS_Store
+chunk-*.txt
+chunks.json
+artifact.json
+deploy-content.txt
+railway-function.ts
