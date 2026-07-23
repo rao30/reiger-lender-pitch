@@ -333,8 +333,17 @@
 
 <script src="model.js"></script>
 <script>
+(function () {
 const CC = { red:'#9B3A3A', green:'#3A7D5C', ink2:'#3D342A', ink3:'#6B5E52', cream3:'#E6DDD0', gold:'#A07840', gold2:'#C49A58', blue:'#2C5282' };
-const { fmt, fmtPct, fmtX, runModel } = window.ReigerModel;
+const RM = window.ReigerModel;
+if (!RM) {
+  console.error('ReigerModel failed to load');
+  return;
+}
+const fmt = RM.fmt;
+const fmtPct = RM.fmtPct;
+const fmtX = RM.fmtX;
+const runModel = RM.runModel;
 
 let chartDraws, chartNoi, chartEgi;
 
@@ -547,6 +556,7 @@ function render() {
 
 document.querySelectorAll('input').forEach(el => el.addEventListener('input', render));
 render();
+})();
 </script>
 </body>
 </html>

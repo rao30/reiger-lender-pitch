@@ -1,3 +1,5 @@
+(function (global) {
+"use strict";
 /**
  * Reiger Avenue - phased gut renovation + draw-based construction interest.
  * Reno order: 5210 -> 5206 -> 5204 -> 5200
@@ -336,17 +338,15 @@ function runModel(overrides = {}) {
   };
 }
 
-// Browser global for non-module script tags
-if (typeof window !== "undefined") {
-  window.ReigerModel = {
-    PROPERTIES,
-    DEFAULTS,
-    fmt,
-    fmtPct,
-    fmtX,
-    solveStabilized,
-    buildPhasedSchedule,
-    sizeTakeout,
-    runModel,
-  };
-}
+global.ReigerModel = {
+  PROPERTIES,
+  DEFAULTS,
+  fmt,
+  fmtPct,
+  fmtX,
+  solveStabilized,
+  buildPhasedSchedule,
+  sizeTakeout,
+  runModel,
+};
+})(typeof window !== "undefined" ? window : globalThis);
