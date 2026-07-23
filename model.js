@@ -44,7 +44,7 @@ const DEFAULTS = {
   insuranceAnnual: 40000,
   waterMonthly: 800,
   otherUtilsMonthly: 200,
-  electricAnnual: 27711,
+  electricMonthly: 2309, // ~$27,711/yr Dallas seasonal model
   capRate: 0.09,
   taxRate: 0.02195,
   // Equity / construction
@@ -102,7 +102,7 @@ function solveStabilized(assumptions, props = PROPERTIES) {
     const gprP = p.units * a.rentMonthly * 12;
     const vacP = gprP * vac;
     const egiP = gprP - vacP;
-    const electric = a.electricAnnual * p.sfShare;
+    const electric = a.electricMonthly * 12 * p.sfShare;
     const water = a.waterMonthly * 12 * p.sfShare;
     const other = a.otherUtilsMonthly * 12 * p.sfShare;
     const insurance = a.insuranceAnnual * p.sfShare;
@@ -396,9 +396,12 @@ function sizeTakeout(noi, value, projectCost, payoff, assumptions) {
 
 function runModel(overrides = {}) {
   const assumptions = { ...DEFAULTS, ...overrides };
-  // Back-compat if UI still sends vacancyRate
+  // Back-compat if UI still sends vacancyRate / electricAnnual
   if (overrides.vacancyRate != null && overrides.vacancyStabilized == null) {
     assumptions.vacancyStabilized = overrides.vacancyRate;
+  }
+  if (overrides.electricAnnual != null && overrides.electricMonthly == null) {
+    assumptions.electricMonthly = overrides.electricAnnual / 12;
   }
   const stabilized = solveStabilized(assumptions);
   const schedule = buildPhasedSchedule(assumptions);

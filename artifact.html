@@ -323,7 +323,7 @@
         <div class="input-group"><label>Min DSCR</label><input type="number" id="inp-dscr" value="1.25" step="0.05"></div>
         <div class="input-group"><label>Cap rate (%)</label><input type="number" id="inp-cap" value="9" step="0.25"></div>
         <div class="input-group"><label>Insurance annual ($)</label><input type="number" id="inp-ins" value="40000" step="1000"></div>
-        <div class="input-group"><label>Electric annual - portfolio ($)</label><input type="number" id="inp-electric" value="27711" step="500"></div>
+        <div class="input-group"><label>Electric / mo portfolio ($)</label><input type="number" id="inp-electric" value="2309" step="50"></div>
         <div class="input-group"><label>Water / mo portfolio ($)</label><input type="number" id="inp-water" value="800" step="50"></div>
         <div class="input-group"><label>Other utils / mo ($)</label><input type="number" id="inp-other" value="200" step="25"></div>
       </div>
@@ -389,7 +389,7 @@ const DEFAULTS = {
   insuranceAnnual: 40000,
   waterMonthly: 800,
   otherUtilsMonthly: 200,
-  electricAnnual: 27711,
+  electricMonthly: 2309, // ~$27,711/yr Dallas seasonal model
   capRate: 0.09,
   taxRate: 0.02195,
   // Equity / construction
@@ -447,7 +447,7 @@ function solveStabilized(assumptions, props = PROPERTIES) {
     const gprP = p.units * a.rentMonthly * 12;
     const vacP = gprP * vac;
     const egiP = gprP - vacP;
-    const electric = a.electricAnnual * p.sfShare;
+    const electric = a.electricMonthly * 12 * p.sfShare;
     const water = a.waterMonthly * 12 * p.sfShare;
     const other = a.otherUtilsMonthly * 12 * p.sfShare;
     const insurance = a.insuranceAnnual * p.sfShare;
@@ -741,9 +741,12 @@ function sizeTakeout(noi, value, projectCost, payoff, assumptions) {
 
 function runModel(overrides = {}) {
   const assumptions = { ...DEFAULTS, ...overrides };
-  // Back-compat if UI still sends vacancyRate
+  // Back-compat if UI still sends vacancyRate / electricAnnual
   if (overrides.vacancyRate != null && overrides.vacancyStabilized == null) {
     assumptions.vacancyStabilized = overrides.vacancyRate;
+  }
+  if (overrides.electricAnnual != null && overrides.electricMonthly == null) {
+    assumptions.electricMonthly = overrides.electricAnnual / 12;
   }
   const stabilized = solveStabilized(assumptions);
   const schedule = buildPhasedSchedule(assumptions);
@@ -818,7 +821,7 @@ function inputs() {
     minDscr: +document.getElementById('inp-dscr').value,
     capRate: +document.getElementById('inp-cap').value / 100,
     insuranceAnnual: +document.getElementById('inp-ins').value,
-    electricAnnual: +document.getElementById('inp-electric').value,
+    electricMonthly: +document.getElementById('inp-electric').value,
     waterMonthly: +document.getElementById('inp-water').value,
     otherUtilsMonthly: +document.getElementById('inp-other').value,
   };
@@ -930,7 +933,7 @@ function render() {
     <td class="text-right">100%</td>
     <td class="text-right">${fmt(s.gpr)}</td>
     <td class="text-right">${fmt(s.egi)}</td>
-    <td class="text-right">${fmt(a.electricAnnual)}</td>
+    <td class="text-right">${fmt(a.electricMonthly*12)}</td>
     <td class="text-right">${fmt(a.waterMonthly*12)}</td>
     <td class="text-right">${fmt(a.otherUtilsMonthly*12)}</td>
     <td class="text-right">${fmt(s.taxes)}</td>
