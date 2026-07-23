@@ -121,6 +121,27 @@
     font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.08em;
     padding: 6px 10px; border-radius: 999px; background: var(--cream2); color: var(--ink2);
   }
+  .legal-grid {
+    display: grid; gap: 14px; margin-top: 8px;
+  }
+  @media (min-width: 720px) {
+    .legal-grid { grid-template-columns: 1fr 1fr; }
+  }
+  .legal-block {
+    background: var(--cream); border: 1px solid var(--cream3); border-radius: 10px; padding: 16px 18px;
+  }
+  .legal-block h3 {
+    font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.14em;
+    text-transform: uppercase; color: var(--gold); margin-bottom: 8px; font-weight: 600;
+  }
+  .legal-block p, .legal-block li {
+    font-size: 13px; color: var(--ink2); font-weight: 300; line-height: 1.55;
+  }
+  .legal-block ul { margin: 0; padding-left: 18px; }
+  .legal-block li { margin-bottom: 6px; }
+  .legal-footnote {
+    margin-top: 14px; font-size: 12px; color: var(--ink3); font-style: italic;
+  }
 </style>
 </head>
 <body>
@@ -129,6 +150,7 @@
     <div class="nav-brand">Reiger Avenue | Dallas TX</div>
     <div class="nav-links">
       <a href="#overview">Overview</a>
+      <a href="#legal-use">Legal Use</a>
       <a href="#phasing">Phasing</a>
       <a href="#draws">Draw Interest</a>
       <a href="#stabilized">Stabilized</a>
@@ -173,6 +195,56 @@
           <span class="pill" id="pill-timeline">-</span>
           <span class="pill" id="pill-rent">$725 / room</span>
         </div>
+      </section>
+
+      <section id="legal-use" class="card section-anchor">
+        <div class="flex justify-between items-center mb-2">
+          <h2>Legal Use - Residential Hotel / Lodging</h2>
+          <span class="badge">Dallas Code Framework</span>
+        </div>
+        <p class="note">
+          These buildings are operated as <strong>long-term residential lodging</strong> (room-by-room leases, 30+ day stays) - the use commonly described as a residential hotel / lodging house - not as nightly short-term rentals and not as conventional apartment flats with full kitchens in every room.
+        </p>
+        <div class="legal-grid">
+          <div class="legal-block">
+            <h3>What the use is</h3>
+            <ul>
+              <li>Private sleeping rooms rented separately on a <strong>monthly / 30+ day</strong> basis.</li>
+              <li>Shared baths and/or kitchens by building design - classic lodging / boarding / residential-hotel product.</li>
+              <li><strong>Not</strong> Chapter 42B short-term rental lodging (stays under 30 consecutive days).</li>
+              <li>Stabilization thesis keeps that same legal use: renovate rooms in place, raise rents to ~$725/room, improve occupancy.</li>
+            </ul>
+          </div>
+          <div class="legal-block">
+            <h3>Why zoning fits</h3>
+            <ul>
+              <li>DCAD lists the sites as <strong>MFR - Multifamily District 2</strong> (Dallas MF-2 family).</li>
+              <li>Under Dallas Development Code lodging uses, <strong>lodging / boarding house</strong> is permitted <strong>by right</strong> in MF-2 / MF-3 / MF-4 districts.</li>
+              <li>That is the code path for multi-room residential lodging on these lots - the portfolio does not require a commercial hotel strip or STR registration to operate as long-stay rooms.</li>
+            </ul>
+          </div>
+          <div class="legal-block">
+            <h3>How it stays compliant in practice</h3>
+            <ul>
+              <li><strong>Certificate of occupancy</strong> aligned to the lodging / multi-tenant residential use for each building.</li>
+              <li><strong>Multi-tenant registration</strong> with Dallas Code Compliance (Chapter 27) - lodging/boarding houses and extended-stay lodging are expressly in the multi-tenant inspection program.</li>
+              <li>Periodic city inspections / minimum housing standards - same compliance stack lenders already see on Dallas multi-tenant assets.</li>
+              <li>Post-gut renovations will be pulled under building permits and, where required, an updated CO so the improved product matches the permitted use.</li>
+            </ul>
+          </div>
+          <div class="legal-block">
+            <h3>What we tell underwriters</h3>
+            <ul>
+              <li>Collateral is four adjacent Munger Place buildings legally positioned for <strong>room-rental residential lodging</strong>.</li>
+              <li>Revenue is lease income from rooms (in-place carry during phased gut; then stabilized $725/room) - not ADR / hotel RevPAR underwriting.</li>
+              <li>Closing diligence confirms current CO language, multi-tenant certificates, and that seller registrations transfer or are reissued to the buyer entity.</li>
+              <li>Phased rehab does not change the use category - it upgrades the same residential-hotel product building by building.</li>
+            </ul>
+          </div>
+        </div>
+        <p class="legal-footnote">
+          Summary for discussion with counsel and City of Dallas records. Specific CO wording, multi-tenant certificate numbers, and any SUP history should be verified in the closing binder; this section describes the governing use framework (Dallas Dev. Code lodging uses + Chapter 27 multi-tenant program), not a substitute for title/zoning counsel opinions.
+        </p>
       </section>
 
       <section id="phasing" class="card section-anchor">
