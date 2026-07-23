@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reiger Avenue - Lender Pitch</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+  :root {
+    --cream: #F7F3EC; --cream2: #EFE9DF; --cream3: #E6DDD0;
+    --ink: #1C1814; --ink2: #3D342A; --ink3: #6B5E52;
+    --gold: #A07840; --gold2: #C49A58; --gold3: #E8C98A;
+    --amber: #C47B2B; --green: #3A7D5C; --red: #9B3A3A; --blue: #2C5282;
+    --warm-shadow: rgba(80,50,20,0.10);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--cream);
+    color: var(--ink);
+    line-height: 1.7;
+  }
+  body::after {
+    content: '';
+    position: fixed; inset: 0; pointer-events: none; z-index: 9999;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='400' height='400' filter='url(%23g)' opacity='0.04'/%3E%3C/svg%3E");
+    opacity: 0.55;
+  }
+  .wrap { max-width: 1200px; margin: 0 auto; padding: 0 28px 80px; position: relative; z-index: 10; }
+  h1 { font-family: 'Cormorant Garamond', serif; font-weight: 300; font-size: clamp(36px, 5vw, 56px); line-height: 1.1; }
+  h1 em { font-style: italic; color: var(--gold); }
+  h2 { font-family: 'Cormorant Garamond', serif; font-size: 26px; font-weight: 500; margin-bottom: 12px; }
+  p { font-size: 15px; color: var(--ink3); font-weight: 300; }
+  .nav {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 22px 0; border-bottom: 1px solid var(--cream3); margin-bottom: 8px;
+  }
+  .nav-brand { font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--gold); }
+  .nav-links { display: flex; gap: 18px; flex-wrap: wrap; }
+  .nav-links a { font-size: 13px; color: var(--ink2); text-decoration: none; }
+  .nav-links a:hover { color: var(--gold); }
+  .hero {
+    text-align: center; padding: 48px 12px 36px;
+    background: radial-gradient(ellipse 80% 60% at 50% 30%, rgba(160,120,64,0.08) 0%, transparent 70%);
+  }
+  .eyebrow {
+    font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 0.22em;
+    text-transform: uppercase; color: var(--gold); margin-bottom: 16px;
+    display: flex; align-items: center; justify-content: center; gap: 12px;
+  }
+  .eyebrow::before, .eyebrow::after { content: ''; width: 40px; height: 1px; background: var(--gold3); }
+  .hero-sub { max-width: 640px; margin: 18px auto 0; font-size: 17px; }
+  .callout {
+    max-width: 760px; margin: 22px auto 0; font-size: 13px; color: var(--ink3);
+    background: rgba(160,120,64,0.08); border: 1px solid rgba(160,120,64,0.2);
+    border-radius: 8px; padding: 12px 18px; text-align: left;
+  }
+  .grid { display: grid; grid-template-columns: 1fr; gap: 24px; margin-top: 28px; }
+  @media (min-width: 1024px) { .grid { grid-template-columns: 2fr 1fr; } }
+  .card {
+    background: #fff; border: 1px solid var(--cream3); border-radius: 16px;
+    padding: 28px; box-shadow: 0 2px 24px var(--warm-shadow); margin-bottom: 24px;
+  }
+  .metrics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 14px; }
+  .metric-card {
+    background: var(--cream); border: 1px solid var(--cream3); border-radius: 10px;
+    padding: 18px; text-align: center;
+  }
+  .metric-label {
+    font-family: 'DM Mono', monospace; font-size: 10px; text-transform: uppercase;
+    color: var(--ink3); letter-spacing: 0.12em; margin-bottom: 8px; font-weight: 500;
+  }
+  .metric-value { font-family: 'Cormorant Garamond', serif; font-size: 30px; font-weight: 400; line-height: 1; }
+  .metric-value.success { color: var(--green); }
+  .metric-value.danger { color: var(--red); }
+  .metric-value.warning { color: var(--amber); }
+  .metric-value.accent { color: var(--gold); }
+  .badge {
+    display: inline-block; padding: 3px 10px; border-radius: 20px;
+    font-family: 'DM Mono', monospace; font-size: 9px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.1em;
+    background: rgba(160,120,64,0.12); color: var(--gold);
+  }
+  table { width: 100%; border-collapse: collapse; margin-top: 12px; }
+  th, td { padding: 12px 12px; text-align: left; border-bottom: 1px solid var(--cream3); font-size: 13px; }
+  th {
+    font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.12em;
+    text-transform: uppercase; color: var(--ink3); font-weight: 500; background: var(--cream2);
+  }
+  .text-right { text-align: right; }
+  .flex { display: flex; } .justify-between { justify-content: space-between; }
+  .items-center { align-items: center; } .mb-2 { margin-bottom: 12px; }
+  .input-group { display: flex; flex-direction: column; margin-bottom: 16px; }
+  .input-group label { font-size: 13px; color: var(--ink2); margin-bottom: 6px; font-weight: 500; }
+  .input-group input, .input-group select {
+    background: var(--cream); border: 1.5px solid var(--cream3); color: var(--ink);
+    padding: 11px 12px; border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: 15px;
+  }
+  .input-group input:focus, .input-group select:focus { outline: none; border-color: var(--gold2); background: #fff; }
+  .chart-box { height: 320px; margin-top: 16px; position: relative; }
+  .timeline {
+    display: grid; gap: 10px; margin-top: 14px;
+  }
+  .phase-row {
+    display: grid; grid-template-columns: 90px 1fr 120px; gap: 12px; align-items: center;
+    padding: 12px 14px; background: var(--cream); border-radius: 10px; border: 1px solid var(--cream3);
+  }
+  .phase-bar {
+    height: 10px; border-radius: 6px; background: linear-gradient(90deg, var(--gold2), var(--gold));
+    position: relative;
+  }
+  .phase-meta { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--ink3); text-align: right; }
+  .note { font-size: 13px; margin-bottom: 14px; }
+  .section-anchor { scroll-margin-top: 24px; }
+  footer { text-align: center; padding: 40px 0 20px; font-size: 12px; color: var(--ink3); }
+  tr.total td { font-weight: 600; background: var(--cream2); }
+  .pill-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+  .pill {
+    font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.08em;
+    padding: 6px 10px; border-radius: 999px; background: var(--cream2); color: var(--ink2);
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav class="nav">
+    <div class="nav-brand">Reiger Avenue | Dallas TX</div>
+    <div class="nav-links">
+      <a href="#overview">Overview</a>
+      <a href="#phasing">Phasing</a>
+      <a href="#draws">Draw Interest</a>
+      <a href="#stabilized">Stabilized</a>
+      <a href="#takeout">Take-Out</a>
+      <a href="#controls">Assumptions</a>
+    </div>
+  </nav>
+
+  <header class="hero">
+    <div class="eyebrow">Construction &amp; Permanent Loan Package</div>
+    <h1>5200-5210 Reiger Ave - <em>Phased Gut Renovation</em></h1>
+    <p class="hero-sub">Four Munger Place buildings | 50 rooms | Full gut, one building at a time | Interest only on capital drawn | Stabilize at $725/room | Permanent take-out at portfolio NOI</p>
+    <div class="callout">
+      <strong style="color:var(--gold)">Lender structure:</strong> Acquisition + rehab financed on a <strong>draw facility</strong> (not Dutch interest). Renovation sequence <strong>5210 -> 5206 -> 5204 -> 5200</strong>, each a 4-6 month gut. Buildings come online at $725/room as they finish. Once fully stabilized, operating expenses are allocated by <strong>building square footage</strong>. Toggle rate, term, LTV, and reno months in the sidebar - the entire pitch recalculates live.
+    </div>
+  </header>
+
+  <div class="grid">
+    <div class="main">
+      <section id="overview" class="card section-anchor">
+        <div class="flex justify-between items-center mb-2">
+          <h2>Portfolio Snapshot</h2>
+          <span class="badge">Live Model</span>
+        </div>
+        <div class="metrics-grid">
+          <div class="metric-card"><div class="metric-label">Purchase</div><div class="metric-value" id="m-purchase">-</div></div>
+          <div class="metric-card"><div class="metric-label">Total Project Cost</div><div class="metric-value" id="m-cost">-</div></div>
+          <div class="metric-card"><div class="metric-label">Hard Rehab</div><div class="metric-value" id="m-rehab">-</div></div>
+          <div class="metric-card"><div class="metric-label">Stabilized NOI</div><div class="metric-value success" id="m-noi">-</div></div>
+          <div class="metric-card"><div class="metric-label">Value @ Cap</div><div class="metric-value accent" id="m-value">-</div></div>
+          <div class="metric-card"><div class="metric-label">Yield on Cost</div><div class="metric-value accent" id="m-yoc">-</div></div>
+          <div class="metric-card"><div class="metric-label">Draw Interest (est.)</div><div class="metric-value" id="m-int-draw">-</div></div>
+          <div class="metric-card"><div class="metric-label">Saved vs Dutch</div><div class="metric-value success" id="m-int-save">-</div></div>
+        </div>
+        <div class="pill-row">
+          <span class="pill">50 rentable rooms</span>
+          <span class="pill">16,060 building SF</span>
+          <span class="pill" id="pill-timeline">-</span>
+          <span class="pill" id="pill-rent">$725 / room</span>
+        </div>
+      </section>
+
+      <section id="phasing" class="card section-anchor">
+        <div class="flex justify-between items-center mb-2">
+          <h2>Phased Renovation Plan</h2>
+          <span class="badge">5210 -> 5200</span>
+        </div>
+        <p class="note">Each building is a full gut. Work is sequential so the portfolio ramps income as buildings stabilize - capital is drawn only for the active phase, not the entire rehab budget on day one.</p>
+        <div class="timeline" id="phase-timeline"></div>
+        <div style="overflow-x:auto;margin-top:18px">
+          <table id="phase-table">
+            <thead>
+              <tr>
+                <th>Building</th>
+                <th class="text-right">Units</th>
+                <th class="text-right">Bldg SF</th>
+                <th class="text-right">Rehab $</th>
+                <th class="text-right">Reno Window</th>
+                <th class="text-right">Online</th>
+                <th class="text-right">Stab. GPR / mo</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="draws" class="card section-anchor">
+        <div class="flex justify-between items-center mb-2">
+          <h2>Draw Schedule &amp; Interest (Not Dutch)</h2>
+          <span class="badge">Interest on Drawn Only</span>
+        </div>
+        <p class="note">
+          <strong style="color:var(--ink2)">Dutch interest</strong> charges the full commitment from day one.
+          This model charges interest only on the <strong>outstanding drawn balance</strong> - close advance first, then monthly rehab draws as each gut progresses.
+        </p>
+        <div class="metrics-grid" style="margin-bottom:16px">
+          <div class="metric-card"><div class="metric-label">Close Draw</div><div class="metric-value" id="m-close-draw">-</div></div>
+          <div class="metric-card"><div class="metric-label">Peak Drawn</div><div class="metric-value" id="m-peak">-</div></div>
+          <div class="metric-card"><div class="metric-label">Points</div><div class="metric-value" id="m-points">-</div></div>
+          <div class="metric-card"><div class="metric-label">Bridge Rate</div><div class="metric-value warning" id="m-bridge-rate">-</div></div>
+        </div>
+        <div class="chart-box"><canvas id="chart-draws"></canvas></div>
+        <div style="overflow-x:auto;margin-top:18px;max-height:360px;overflow-y:auto">
+          <table id="draw-table">
+            <thead>
+              <tr>
+                <th>Mo</th>
+                <th>Phase</th>
+                <th class="text-right">Draw</th>
+                <th class="text-right">Drawn Bal</th>
+                <th class="text-right">Interest</th>
+                <th class="text-right">Cum. Int</th>
+                <th class="text-right">vs Dutch</th>
+                <th class="text-right">EGI / mo</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="stabilized" class="card section-anchor">
+        <div class="flex justify-between items-center mb-2">
+          <h2>Stabilized Operations by Building</h2>
+          <span class="badge">Allocated by SF</span>
+        </div>
+        <p class="note">Gross rent = units x $725. Vacancy, management, and R&amp;M follow each building's EGI. Electric, water, other utilities, insurance, and real-estate taxes are split by <strong>building SF share</strong> of the 16,060 SF portfolio.</p>
+        <div style="overflow-x:auto">
+          <table id="stab-table">
+            <thead>
+              <tr>
+                <th>Building</th>
+                <th class="text-right">SF Share</th>
+                <th class="text-right">GPR</th>
+                <th class="text-right">EGI</th>
+                <th class="text-right">Utils+</th>
+                <th class="text-right">Tax</th>
+                <th class="text-right">Ins</th>
+                <th class="text-right">NOI</th>
+                <th class="text-right">NOI / mo</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+        <div class="chart-box" style="height:280px"><canvas id="chart-noi"></canvas></div>
+      </section>
+
+      <section id="takeout" class="card section-anchor">
+        <div class="flex justify-between items-center mb-2">
+          <h2>Permanent Take-Out</h2>
+          <span class="badge">Post-Stabilization</span>
+        </div>
+        <p class="note">Loan sized to the lesser of LTV and DSCR constraints against stabilized income value. Payoff is the peak drawn construction balance (interest assumed paid current during the hold).</p>
+        <div class="metrics-grid">
+          <div class="metric-card"><div class="metric-label">Perm Loan</div><div class="metric-value accent" id="t-loan">-</div></div>
+          <div class="metric-card"><div class="metric-label">Binding Constraint</div><div class="metric-value" id="t-bind">-</div></div>
+          <div class="metric-card"><div class="metric-label">DSCR</div><div class="metric-value success" id="t-dscr">-</div></div>
+          <div class="metric-card"><div class="metric-label">Debt Yield</div><div class="metric-value" id="t-dy">-</div></div>
+          <div class="metric-card"><div class="metric-label">LTV / LTC</div><div class="metric-value" id="t-ltv">-</div></div>
+          <div class="metric-card"><div class="metric-label">Annual DS</div><div class="metric-value" id="t-ds">-</div></div>
+          <div class="metric-card"><div class="metric-label">CF After Debt</div><div class="metric-value success" id="t-cfad">-</div></div>
+          <div class="metric-card"><div class="metric-label">Equity @ Refi</div><div class="metric-value" id="t-eq">-</div></div>
+        </div>
+        <div class="chart-box" style="height:260px;margin-top:20px"><canvas id="chart-egi"></canvas></div>
+      </section>
+
+      <section class="card">
+        <h2>Why This Works for a Lender</h2>
+        <div style="display:grid;gap:14px;margin-top:8px">
+          <p><strong style="color:var(--ink2)">Controlled risk ramp.</strong> Only one building is offline for gut work at a time. As 5210 stabilizes, its NOI begins offsetting carry before 5204's larger rehab starts.</p>
+          <p><strong style="color:var(--ink2)">Transparent collateral advance.</strong> Draws track hard costs: purchase and closing at day zero, then equal monthly rehab draws against the active building's SF x $/SF budget.</p>
+          <p><strong style="color:var(--ink2)">Interest aligned with capital at risk.</strong> Eliminating Dutch interest reduces borrower burn and interest-reserve sizing - savings shown live versus a full-commitment accrual.</p>
+          <p><strong style="color:var(--ink2)">Clear exit to permanent debt.</strong> Take-out underwrites to stabilized NOI at a market cap, with LTV and DSCR gates you can stress in the controls.</p>
+        </div>
+      </section>
+    </div>
+
+    <aside id="controls" class="section-anchor">
+      <div class="card">
+        <h2>Playable Assumptions</h2>
+        <p class="note" style="margin-bottom:16px">Yellow-style inputs - change anything; charts and lender metrics update instantly.</p>
+
+        <div class="input-group"><label>Stabilized rent / room ($)</label><input type="number" id="inp-rent" value="725" step="25"></div>
+        <div class="input-group"><label>Vacancy (%)</label><input type="number" id="inp-vac" value="8" step="0.5"></div>
+        <div class="input-group"><label>Reno months / building (4-6)</label><input type="number" id="inp-reno-mos" value="5" min="4" max="6" step="1"></div>
+        <div class="input-group"><label>Lease-up after reno (months)</label><input type="number" id="inp-lease" value="1" min="0" max="3" step="1"></div>
+        <div class="input-group"><label>Rehab cost ($/SF)</label><input type="number" id="inp-psf" value="70" step="5"></div>
+        <div class="input-group"><label>Purchase price ($)</label><input type="number" id="inp-purchase" value="1022000" step="1000"></div>
+        <div class="input-group"><label>Closing / holding ($)</label><input type="number" id="inp-closing" value="227400" step="1000"></div>
+
+        <h2 style="margin-top:8px;font-size:22px">Bridge / Construction</h2>
+        <div class="input-group"><label>Interest rate (%)</label><input type="number" id="inp-bridge-rate" value="11" step="0.25"></div>
+        <div class="input-group"><label>Points (%)</label><input type="number" id="inp-points" value="3" step="0.25"></div>
+
+        <h2 style="margin-top:8px;font-size:22px">Take-Out Loan</h2>
+        <div class="input-group"><label>Interest rate (%)</label><input type="number" id="inp-to-rate" value="6.75" step="0.125"></div>
+        <div class="input-group"><label>Amortization (years)</label><input type="number" id="inp-to-amort" value="30" step="1"></div>
+        <div class="input-group"><label>Term / maturity (years)</label><input type="number" id="inp-to-term" value="10" step="1"></div>
+        <div class="input-group"><label>Max LTV (%)</label><input type="number" id="inp-ltv" value="75" step="1"></div>
+        <div class="input-group"><label>Min DSCR</label><input type="number" id="inp-dscr" value="1.25" step="0.05"></div>
+        <div class="input-group"><label>Cap rate (%)</label><input type="number" id="inp-cap" value="9" step="0.25"></div>
+        <div class="input-group"><label>Insurance annual ($)</label><input type="number" id="inp-ins" value="40000" step="1000"></div>
+        <div class="input-group"><label>Water / mo portfolio ($)</label><input type="number" id="inp-water" value="800" step="50"></div>
+        <div class="input-group"><label>Other utils / mo ($)</label><input type="number" id="inp-other" value="200" step="25"></div>
+      </div>
+
+      <div class="card">
+        <h2>Sources &amp; Uses</h2>
+        <table id="su-table">
+          <tbody></tbody>
+        </table>
+      </div>
+    </aside>
+  </div>
+
+  <footer>
+    Reiger Avenue Lender Pitch | Confidential | Interactive model for discussion purposes | Dallas, TX 75214
+  </footer>
+</div>
+
+<script src="model.js"></script>
+<script>
+const CC = { red:'#9B3A3A', green:'#3A7D5C', ink2:'#3D342A', ink3:'#6B5E52', cream3:'#E6DDD0', gold:'#A07840', gold2:'#C49A58', blue:'#2C5282' };
+const { fmt, fmtPct, fmtX, runModel } = window.ReigerModel;
+
+let chartDraws, chartNoi, chartEgi;
+
+function inputs() {
+  return {
+    rentMonthly: +document.getElementById('inp-rent').value,
+    vacancyRate: +document.getElementById('inp-vac').value / 100,
+    renoMonthsEach: +document.getElementById('inp-reno-mos').value,
+    leaseUpMonths: +document.getElementById('inp-lease').value,
+    renoPsf: +document.getElementById('inp-psf').value,
+    purchasePrice: +document.getElementById('inp-purchase').value,
+    closingHolding: +document.getElementById('inp-closing').value,
+    constrRate: +document.getElementById('inp-bridge-rate').value / 100,
+    constrPoints: +document.getElementById('inp-points').value / 100,
+    takeoutRate: +document.getElementById('inp-to-rate').value / 100,
+    takeoutAmortYrs: +document.getElementById('inp-to-amort').value,
+    takeoutTermYrs: +document.getElementById('inp-to-term').value,
+    takeoutLtv: +document.getElementById('inp-ltv').value / 100,
+    minDscr: +document.getElementById('inp-dscr').value,
+    capRate: +document.getElementById('inp-cap').value / 100,
+    insuranceAnnual: +document.getElementById('inp-ins').value,
+    waterMonthly: +document.getElementById('inp-water').value,
+    otherUtilsMonthly: +document.getElementById('inp-other').value,
+  };
+}
+
+function setText(id, v) { document.getElementById(id).textContent = v; }
+
+function render() {
+  const m = runModel(inputs());
+  const { assumptions: a, stabilized: s, schedule: sch, takeout: t } = m;
+
+  setText('m-purchase', fmt(a.purchasePrice));
+  setText('m-cost', fmt(sch.projectCost));
+  setText('m-rehab', fmt(sch.totalRehab));
+  setText('m-noi', fmt(s.noi));
+  setText('m-value', fmt(s.value));
+  setText('m-yoc', fmtPct(m.yieldOnCost));
+  setText('m-int-draw', fmt(sch.totalInterestDraw));
+  setText('m-int-save', fmt(sch.interestSavings));
+  setText('pill-timeline', `${sch.lastStabilize} months to full stabilization`);
+  setText('pill-rent', `${fmt(a.rentMonthly)} / room`);
+
+  setText('m-close-draw', fmt(sch.closeDraw));
+  setText('m-peak', fmt(sch.peakDrawn));
+  setText('m-points', fmt(sch.pointsFee));
+  setText('m-bridge-rate', fmtPct(a.constrRate));
+
+  setText('t-loan', fmt(t.loan));
+  setText('t-bind', t.binding);
+  setText('t-dscr', fmtX(t.dscr));
+  setText('t-dy', fmtPct(t.debtYield));
+  setText('t-ltv', `${fmtPct(t.ltv)} / ${fmtPct(t.ltc)}`);
+  setText('t-ds', fmt(t.annualDs));
+  setText('t-cfad', fmt(t.cfad));
+  const eqEl = document.getElementById('t-eq');
+  eqEl.textContent = fmt(t.equityReturned);
+  eqEl.className = 'metric-value ' + (t.equityReturned >= 0 ? 'success' : 'danger');
+
+  // Phase timeline bars
+  const totalMos = sch.lastStabilize || 1;
+  const tl = document.getElementById('phase-timeline');
+  tl.innerHTML = sch.phases.map(p => {
+    const left = ((p.renoStart) / totalMos) * 100;
+    const width = ((p.renoEnd - p.renoStart + 1) / totalMos) * 100;
+    return `<div class="phase-row">
+      <div style="font-weight:500">${p.id}</div>
+      <div style="background:var(--cream3);border-radius:6px;height:10px;position:relative;overflow:hidden">
+        <div class="phase-bar" style="position:absolute;left:${left}%;width:${width}%"></div>
+      </div>
+      <div class="phase-meta">M${p.renoStart}-${p.renoEnd}</div>
+    </div>`;
+  }).join('');
+
+  const ptb = document.querySelector('#phase-table tbody');
+  ptb.innerHTML = sch.phases.map(p => `<tr>
+    <td>${p.address}</td>
+    <td class="text-right">${p.units}</td>
+    <td class="text-right">${p.buildingSf.toLocaleString()}</td>
+    <td class="text-right">${fmt(p.rehabBudget)}</td>
+    <td class="text-right">M${p.renoStart}-M${p.renoEnd}</td>
+    <td class="text-right">M${p.stabilizeMonth}</td>
+    <td class="text-right">${fmt(p.units * a.rentMonthly)}</td>
+  </tr>`).join('') + `<tr class="total">
+    <td>Portfolio</td>
+    <td class="text-right">${s.totalUnits}</td>
+    <td class="text-right">16,060</td>
+    <td class="text-right">${fmt(sch.totalRehab)}</td>
+    <td class="text-right" colspan="2">Fully online M${sch.lastStabilize}</td>
+    <td class="text-right">${fmt(s.totalUnits * a.rentMonthly)}</td>
+  </tr>`;
+
+  const dtb = document.querySelector('#draw-table tbody');
+  dtb.innerHTML = sch.months.map(row => `<tr>
+    <td>${row.month}</td>
+    <td>${row.label}</td>
+    <td class="text-right">${fmt(row.draw)}</td>
+    <td class="text-right">${fmt(row.drawn)}</td>
+    <td class="text-right">${fmt(row.interest)}</td>
+    <td class="text-right">${fmt(row.cumulativeInterest)}</td>
+    <td class="text-right" style="color:var(--green)">${fmt(row.interestSavedVsDutch)}</td>
+    <td class="text-right">${fmt(row.egiMo)}</td>
+  </tr>`).join('');
+
+  const stb = document.querySelector('#stab-table tbody');
+  stb.innerHTML = s.byProp.map(p => {
+    const utils = p.electric + p.water + p.other;
+    return `<tr>
+      <td>${p.id}</td>
+      <td class="text-right">${fmtPct(p.sfShare)}</td>
+      <td class="text-right">${fmt(p.gpr)}</td>
+      <td class="text-right">${fmt(p.egi)}</td>
+      <td class="text-right">${fmt(utils)}</td>
+      <td class="text-right">${fmt(p.taxes)}</td>
+      <td class="text-right">${fmt(p.insurance)}</td>
+      <td class="text-right">${fmt(p.noi)}</td>
+      <td class="text-right">${fmt(p.monthlyNoi)}</td>
+    </tr>`;
+  }).join('') + `<tr class="total">
+    <td>Total</td>
+    <td class="text-right">100%</td>
+    <td class="text-right">${fmt(s.gpr)}</td>
+    <td class="text-right">${fmt(s.egi)}</td>
+    <td class="text-right">${fmt(a.electricAnnual + a.waterMonthly*12 + a.otherUtilsMonthly*12)}</td>
+    <td class="text-right">${fmt(s.taxes)}</td>
+    <td class="text-right">${fmt(a.insuranceAnnual)}</td>
+    <td class="text-right">${fmt(s.noi)}</td>
+    <td class="text-right">${fmt(s.noi/12)}</td>
+  </tr>`;
+
+  const su = document.querySelector('#su-table tbody');
+  su.innerHTML = `
+    <tr><td>Purchase</td><td class="text-right">${fmt(a.purchasePrice)}</td></tr>
+    <tr><td>Hard renovation</td><td class="text-right">${fmt(sch.totalRehab)}</td></tr>
+    <tr><td>Closing / holding</td><td class="text-right">${fmt(a.closingHolding)}</td></tr>
+    <tr><td>Points (financed)</td><td class="text-right">${fmt(sch.pointsFee)}</td></tr>
+    <tr class="total"><td>Total uses</td><td class="text-right">${fmt(sch.projectCost + sch.pointsFee)}</td></tr>
+    <tr><td colspan="2" style="height:8px;border:none"></td></tr>
+    <tr><td>Construction draws (peak)</td><td class="text-right">${fmt(sch.peakDrawn)}</td></tr>
+    <tr><td>Sponsor equity (plug)</td><td class="text-right">${fmt(Math.max(0, sch.projectCost + sch.pointsFee - sch.peakDrawn))}</td></tr>
+    <tr class="total"><td>Est. take-out loan</td><td class="text-right">${fmt(t.loan)}</td></tr>
+    <tr><td>Draw interest (carry)</td><td class="text-right">${fmt(sch.totalInterestDraw)}</td></tr>
+    <tr><td>Interest saved vs Dutch</td><td class="text-right" style="color:var(--green)">${fmt(sch.interestSavings)}</td></tr>
+  `;
+
+  // Charts
+  const labels = sch.months.map(r => `M${r.month}`);
+  if (chartDraws) chartDraws.destroy();
+  chartDraws = new Chart(document.getElementById('chart-draws'), {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [
+        { label: 'Drawn balance', data: sch.months.map(r => r.drawn), borderColor: CC.gold, backgroundColor: 'rgba(160,120,64,0.12)', fill: true, tension: 0.25 },
+        { label: 'Cumulative draw interest', data: sch.months.map(r => r.cumulativeInterest), borderColor: CC.blue, tension: 0.25 },
+        { label: 'Cumulative Dutch interest', data: sch.months.map(r => r.dutchInterest), borderColor: CC.red, borderDash: [6,4], tension: 0.25 },
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { labels: { color: CC.ink3, boxWidth: 12, font: { size: 11 } } } },
+      scales: {
+        x: { ticks: { color: CC.ink3, maxTicksLimit: 12, font: { size: 10 } }, grid: { color: CC.cream3 } },
+        y: { ticks: { color: CC.ink3, callback: v => '$' + (v/1000).toFixed(0) + 'k', font: { size: 10 } }, grid: { color: CC.cream3 } }
+      }
+    }
+  });
+
+  if (chartNoi) chartNoi.destroy();
+  chartNoi = new Chart(document.getElementById('chart-noi'), {
+    type: 'bar',
+    data: {
+      labels: s.byProp.map(p => p.id),
+      datasets: [
+        { label: 'Annual NOI', data: s.byProp.map(p => p.noi), backgroundColor: CC.gold2 },
+        { label: 'Annual EGI', data: s.byProp.map(p => p.egi), backgroundColor: 'rgba(44,82,130,0.35)' },
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { labels: { color: CC.ink3, boxWidth: 12, font: { size: 11 } } } },
+      scales: {
+        x: { ticks: { color: CC.ink3 }, grid: { display: false } },
+        y: { ticks: { color: CC.ink3, callback: v => '$' + (v/1000).toFixed(0) + 'k' }, grid: { color: CC.cream3 } }
+      }
+    }
+  });
+
+  if (chartEgi) chartEgi.destroy();
+  chartEgi = new Chart(document.getElementById('chart-egi'), {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [{
+        label: 'Portfolio EGI (monthly ramp)',
+        data: sch.months.map(r => r.egiMo),
+        backgroundColor: sch.months.map(r => r.onlineIds.length === sch.phases.length ? CC.green : CC.gold2),
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { ticks: { color: CC.ink3, maxTicksLimit: 12, font: { size: 10 } }, grid: { display: false } },
+        y: { ticks: { color: CC.ink3, callback: v => '$' + (v/1000).toFixed(0) + 'k' }, grid: { color: CC.cream3 } }
+      }
+    }
+  });
+}
+
+document.querySelectorAll('input').forEach(el => el.addEventListener('input', render));
+render();
+</script>
+</body>
+</html>
